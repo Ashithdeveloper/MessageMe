@@ -1,4 +1,5 @@
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -6,7 +7,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Typo from "@/components/Type";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
@@ -16,24 +17,30 @@ import { verticalScale } from "@/utils/styling";
 import { EnvelopeSimple, Lock, User } from "phosphor-react-native";
 import Button from "@/components/Button";
 import { router } from "expo-router";
+import { useAuth } from "@/context/authContext";
 
 const Register = () => {
   const nameRef = useRef<string>("");
   const emailRef = useRef<string>("");
   const passwordRef = useRef<string>("");
+  const [ loading, setLoading ] = useState(false);
+  const { signUp } = useAuth();
 
-  const handleRegister = () => {
-    if (!nameRef.current || !emailRef.current || !passwordRef.current) {
-      console.log("All fields are required");
-      return;
-    }
+const handleRegister = async () => {
+  if (!nameRef.current || !emailRef.current || !passwordRef.current) {
+    Alert.alert("All fields are required");
+    return;
+  }
+  try {
+    setLoading(true);
+    await signUp(emailRef.current, passwordRef.current, nameRef.current, "");
+  } catch (error: any) {
+    Alert.alert("register",error?.message || "Registration failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    console.log("Name:", nameRef.current);
-    console.log("Email:", emailRef.current);
-    console.log("Password:", passwordRef.current);
-
-    // 🔜 API call here
-  };
 
   return (
     <KeyboardAvoidingView

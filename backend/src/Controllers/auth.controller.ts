@@ -33,7 +33,7 @@ export const register = async (req: Request, res: Response) => {
       profilepic
     });
 
-    const token = createToken(user._id.toString());
+    const token = createToken(user);
 
     res.status(201).json({
       message: "User created successfully",
@@ -69,7 +69,7 @@ export const Login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const token = createToken(user._id.toString());
+    const token = createToken(user);
 
     res.status(200).json({
       message: "Login successful",

@@ -1,17 +1,10 @@
 import { colors } from "@/constants/theme";
-import { useRouter } from "expo-router";
-import { useEffect } from "react";
 
 import { StatusBar, StyleSheet,  View } from "react-native";
 import Animated, {  FadeInDown } from "react-native-reanimated";
 
 export default function SplashScreen() {
-  const router = useRouter();
-  useEffect(()=>{
-    setTimeout(() => {
-      router.replace("/(auth)/welcome");
-    }, 2000);
-  },[])
+
   return (
     <View
       style={style.constainer}

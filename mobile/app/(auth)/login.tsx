@@ -1,4 +1,5 @@
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -6,7 +7,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Typo from "@/components/Type";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
@@ -16,12 +17,15 @@ import { verticalScale } from "@/utils/styling";
 import { EnvelopeSimple, Lock, User } from "phosphor-react-native";
 import Button from "@/components/Button";
 import { router } from "expo-router";
+import { useAuth } from "@/context/authContext";
 
 const Login = () => {
   const emailRef = useRef<string>("");
   const passwordRef = useRef<string>("");
+  const [ loading, setLoading ] = useState(false);
+  const { signIn } = useAuth()
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if ( !emailRef.current || !passwordRef.current) {
       console.log("All fields are required");
       return;
@@ -30,6 +34,14 @@ const Login = () => {
     console.log("Password:", passwordRef.current);
 
     // 🔜 API call here
+    try {
+      setLoading(true);
+      await signIn(emailRef.current, passwordRef.current);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+      Alert.alert("Login failed");
+    }
 
   };
 
