@@ -51,6 +51,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // ✅ TOKEN VALID
       setToken(storedToken);
       setUser(decoded.user);
+  
 
       // ⛔ DO NOT await socket here
       connectSocket();

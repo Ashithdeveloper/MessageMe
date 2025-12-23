@@ -1,11 +1,19 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { Stack } from 'expo-router'
+import React from "react";
+import { Stack } from "expo-router";
 
-const _layout = () => {
+export default function MainLayout() {
   return (
-   < Stack screenOptions={{ headerShown: false }} />
-  )
-}
+    <Stack>
+      <Stack.Screen name="home" options={{ headerShown: false }} />
 
-export default _layout
+      <Stack.Screen
+        name="profilemodal"
+        options={{
+          animation: "fade", // Fade is actually good here for a popup feel
+    
+        }}
+        
+      />
+    </Stack>
+  );
+}
