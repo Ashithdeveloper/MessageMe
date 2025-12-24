@@ -143,3 +143,14 @@ export type MessageProps = {
   isMe?: boolean;
   createdAt: string;
 };
+
+// export interface User {
+//   _id: string;
+//   name: string;
+//   email: string;
+//   profilepic?: string | null;
+// }
+
+// export interface AuthResponse {
+//   user: User;
+// }

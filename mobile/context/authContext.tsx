@@ -5,6 +5,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import { connectSocket, disconnectSocket } from "@/socket/socket";
+import axios from "axios";
 
 export const AuthContext = createContext<AuthContextProps>({
   token: null,
@@ -29,6 +30,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     loadToken();
   }, []);
 
+  useEffect(() => {
+    if (token) {
+      setAuthHeader(token);
+    } else {
+      setAuthHeader(null);
+    }
+  }, [token]);
+  //save token for global access axois interceptors
+  const setAuthHeader = (token: string | null) => {
+    if (token) {
+      console.log("Setting auth header:", token);
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common.Authorization;
+    }
+  };
+
+
   const loadToken = async () => {
     try {
       const storedToken = await AsyncStorage.getItem("token");
@@ -38,6 +57,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         router.replace("/(auth)/welcome");
         return;
       }
+     
 
       const decoded = jwtDecode<DecodedTokenProps>(storedToken);
 
@@ -57,6 +77,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       connectSocket();
 
       router.replace("/(main)/home");
+      
     } catch (error) {
       console.error("Error decoding token:", error);
       await AsyncStorage.removeItem("token");
