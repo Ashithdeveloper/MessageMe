@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
      
 
-      const decoded = jwtDecode<DecodedTokenProps>(storedToken);
+      const decoded: any = jwtDecode<DecodedTokenProps>(storedToken);
 
       // ✅ TOKEN EXPIRED
       if (decoded.exp * 1000 < Date.now()) {
@@ -70,7 +70,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       // ✅ TOKEN VALID
       setToken(storedToken);
-      setUser(decoded.user);
+      setUser(decoded);
+      
   
 
       // ⛔ DO NOT await socket here
