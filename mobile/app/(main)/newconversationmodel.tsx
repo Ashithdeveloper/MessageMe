@@ -8,14 +8,21 @@ import Avatar from "@/components/Avatar";
 import * as ImagePicker from "expo-image-picker";
 import Input from "@/components/Input";
 import Typo from "@/components/Type";
+import { useAuth } from "@/context/authContext";
+import Button from "@/components/Button";
 
 const Newconversationmodel = () => {
   const { isGroup } = useLocalSearchParams();
   const isGroupMOde = isGroup === "1"
-   const [pickedImage, setPickedImage] = useState<any>(null);
-    const [profileImage, setProfileImage] = useState<string | null>(null);
-    const [groupName, setGroupName] = useState("");
-    const isSelected = false
+  const [pickedImage, setPickedImage] = useState<any>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [groupName, setGroupName] = useState("");
+  const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
+  const [ isLoading, setIsLoading ] = useState(false);
+
+  
+  const { user:currentUser } = useAuth();
+  console.log("Current user:", currentUser);
   
    const pickImage = async () => {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -36,9 +43,37 @@ const Newconversationmodel = () => {
         setPickedImage(image);
         setProfileImage(image.uri);
       }
-    };
+  };
+const toggleParticipant = (user: any) => {
+  setSelectedParticipants((prev) => {
+    if (prev.includes(user.id)) {
+      return prev.filter((id) => id !== user.id);
+    } else {
+      return [...prev, user.id];
+    }
+  });
+};
 
-  const onSelectUser = () => {};
+
+const onSelectUser = (user: any) => {
+  if (!currentUser) {
+    Alert.alert("Authentication", "Please login to start a conversation");
+    return;
+  }
+
+  if (isGroupMOde) {
+    toggleParticipant(user);
+  } else {
+    // start single conversation
+    console.log("Start chat with", user.id);
+  }
+};
+const createGroup = () => {
+
+}
+  // create group
+
+
   const contacts = [
     {
       id: 1,
@@ -71,6 +106,8 @@ const Newconversationmodel = () => {
       image: "https://via.placeholder.com/150",
     },
   ];
+
+
   return (
     <ScreenWrapper isModal={true}>
       <View style={styles.container}>
@@ -102,29 +139,52 @@ const Newconversationmodel = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.contactList}
         >
-          {contacts.map((user: any, index: number) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.contactRow}
-              onPress={() => onSelectUser(user)}
-            >
-              {/* content */}
-              <Avatar uri={user.image} size={45} />
-              <Typo fontWeight={"600"} color={colors.white}>{user.name}</Typo>
-              {
-                isGroupMOde &&(
+          {contacts.map((user: any) => {
+            const isSelected = selectedParticipants.includes(user.id);
+
+            return (
+              <TouchableOpacity
+                key={user.id}
+                style={[
+                  styles.contactRow,
+                  isSelected && styles.selectedContact,
+                ]}
+                onPress={() => onSelectUser(user)}
+              >
+                <Avatar uri={user.image} size={45} />
+                <Typo fontWeight="600" color={colors.white}>
+                  {user.name}
+                </Typo>
+
+                {isGroupMOde && (
                   <View style={styles.selectionIndicator}>
-                    <View style={[styles.checkbox , isSelected && styles.checked]} />
+                    <View
+                      style={[styles.checkbox, isSelected && styles.checked]}
+                    />
                   </View>
-                )
-              }
-            </TouchableOpacity>
-          ))}
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
+        {isGroupMOde && selectedParticipants.length >= 2 && (
+          <View style={styles.createGroupButton}>
+            <Button
+              onPress={createGroup}
+              disabled={!groupName.trim()}
+              loading={isLoading}
+              style={styles.createGroupBtn}
+            >
+              <Typo fontWeight="600" size={17} color={colors.white}>
+                Create Group
+              </Typo>
+            </Button>
+          </View>
+        )}
       </View>
     </ScreenWrapper>
   );
-};
+};    
 
 export default Newconversationmodel;
 
@@ -161,7 +221,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacingY._5,
   },
   selectedContact: {
-    backgroundColor: colors.neutral100,
+    // backgroundColor: colors.neutral100,
     borderRadius: radius._15,
   },
   contactList: {
@@ -190,8 +250,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: spacingX._15,
-    backgroundColor: colors.white,
+    backgroundColor: colors.neutral900,
     borderTopWidth: 1,
-    borderTopColor: colors.neutral200,
+    borderTopColor: colors.neutral700,
+  },
+  createGroupBtn: {
+    width: "100%",
+    borderRadius: radius.full,
+    backgroundColor: colors.primary,
   },
 });

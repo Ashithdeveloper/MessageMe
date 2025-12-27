@@ -16,6 +16,7 @@ const Home = () => {
   const router = useRouter()
   const [ selectedTab , setSelectedTab ] = useState(0)
   const [ loading, setLoading ] = useState(false);
+  console.log("Current user:", currentUser);
 
   const handleLogout = async () => {
     await signOut();

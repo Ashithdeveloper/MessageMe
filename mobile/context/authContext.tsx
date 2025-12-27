@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // 🔥 load token ONCE
   useEffect(() => {
     loadToken();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (token) {
@@ -71,6 +71,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // ✅ TOKEN VALID
       setToken(storedToken);
       setUser(decoded);
+      console.log("Decoded token:", decoded);
       
   
 
