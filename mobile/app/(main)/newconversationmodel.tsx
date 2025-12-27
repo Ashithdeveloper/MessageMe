@@ -69,7 +69,9 @@ const onSelectUser = (user: any) => {
   }
 };
 const createGroup = () => {
-
+  if(!groupName.trim() || !currentUser || selectedParticipants.length<2){
+    return
+  }
 }
   // create group
 
