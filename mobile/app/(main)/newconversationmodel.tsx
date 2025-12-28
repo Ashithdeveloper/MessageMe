@@ -1,5 +1,5 @@
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import ScreenWrapper from "@/components/ScreenWrapper";
@@ -10,6 +10,7 @@ import Input from "@/components/Input";
 import Typo from "@/components/Type";
 import { useAuth } from "@/context/authContext";
 import Button from "@/components/Button";
+import { getContacts } from "@/socket/socketEven";
 
 const Newconversationmodel = () => {
   const { isGroup } = useLocalSearchParams();
@@ -19,11 +20,29 @@ const Newconversationmodel = () => {
   const [groupName, setGroupName] = useState("");
   const [selectedParticipants, setSelectedParticipants] = useState<number[]>([]);
   const [ isLoading, setIsLoading ] = useState(false);
+  const [ contacts , setContacts ] = useState([]);
 
   
   const { user:currentUser } = useAuth();
   console.log("Current user:", currentUser);
-  
+
+  //contacts socket API 
+  useEffect(()=>{
+    getContacts(processContacts);
+    getContacts(
+      {}
+    )
+    return () => {
+      getContacts(processContacts , true);
+    }
+  },[])
+  const processContacts = (res: any) =>{
+    console.log("Contacts:", res);
+    if(res.success){
+      setContacts(res.data);
+      console.log("Contacts:", res.data);
+    }
+  }
    const pickImage = async () => {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   
@@ -76,38 +95,38 @@ const createGroup = () => {
   // create group
 
 
-  const contacts = [
-    {
-      id: 1,
-      name: "Ashith ",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 2,
-      name: "Austine Doe",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 3,
-      name: "user 3",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      name: "user 4",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 5,
-      name: "Alice",
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 6,
-      name: "user 6",
-      image: "https://via.placeholder.com/150",
-    },
-  ];
+  // const contacts = [
+  //   {
+  //     id: 1,
+  //     name: "Ashith ",
+  //     image: "https://via.placeholder.com/150",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Austine Doe",
+  //     image: "https://via.placeholder.com/150",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "user 3",
+  //     image: "https://via.placeholder.com/150",
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "user 4",
+  //     image: "https://via.placeholder.com/150",
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "Alice",
+  //     image: "https://via.placeholder.com/150",
+  //   },
+  //   {
+  //     id: 6,
+  //     name: "user 6",
+  //     image: "https://via.placeholder.com/150",
+  //   },
+  // ];
 
 
   return (
@@ -153,7 +172,7 @@ const createGroup = () => {
                 ]}
                 onPress={() => onSelectUser(user)}
               >
-                <Avatar uri={user.image} size={45} />
+                <Avatar uri={user.profilepic} size={45} />
                 <Typo fontWeight="600" color={colors.white}>
                   {user.name}
                 </Typo>

@@ -47,7 +47,7 @@ export const getDetails = async () => {
 export const updateProfile = async (
   name: string,
   email: string,
-  password: string,
+  password?: string,
   profilepic?: string
 ) => {
   try {

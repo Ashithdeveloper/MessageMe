@@ -52,7 +52,7 @@ export default function ProfileModal() {
       const image = result.assets[0];
       setPickedImage(image);
       setProfileImage(image.uri);
-      handleSave();
+      setIsEditing(true); // user must save manually
     }
   };
 
@@ -69,48 +69,48 @@ export default function ProfileModal() {
       setUsername(res.user.name);
       setEmail(res.user.email);
       setProfileImage(res.user.profilepic ?? null);
+      console.log(res.user);
     } catch (error) {
       console.log("ProfileDetails error:", error);
     }
   };
 
   /* ---------------- SAVE PROFILE ---------------- */
-  const handleSave = async () => {
-    try {
-      setIsEditing(false);
+ const handleSave = async () => {
+   try {
+     setIsEditing(false);
 
-      let uploadedImageUrl: string | undefined = profileImage ?? undefined;
+     let uploadedImageUrl: string | undefined = undefined;
 
-      if (pickedImage) {
-        uploadedImageUrl = await uploadToCloudinary(pickedImage);
-        setProfileImage(uploadedImageUrl);
-        console.log(uploadedImageUrl);
-      }
-      console.log(uploadedImageUrl);
+     if (pickedImage) {
+       uploadedImageUrl = await uploadToCloudinary(pickedImage);
+     }
 
-      const res: any = await updateProfile(
-        username,
-        email,
-        password,
-        uploadedImageUrl
-      );
+     const res: any = await updateProfile(
+       username,
+       email,
+       password.trim() ? password : undefined,
+       uploadedImageUrl
+     );
 
-      if (!res || typeof res !== "object" || !("user" in res)) {
-        console.log("Invalid update response:", res);
-        Alert.alert("Error", "Unexpected server response");
-        return;
-      }
+     if (!res?.user) {
+       Alert.alert("Error", "Unexpected server response");
+       return;
+     }
 
-      setUsername(res.user.name);
-      setEmail(res.user.email);
-      setProfileImage(res.user.profilepic ?? null);
+     setUsername(res.user.name);
+     setEmail(res.user.email);
+     setProfileImage(res.user.profilepic ?? null);
+     setPickedImage(null);
+     setPassword("");
 
-      Alert.alert("Profile Updated", "Your profile updated successfully");
-    } catch (error) {
-      console.log("Update profile error:", error);
-      Alert.alert("Error", "Profile update failed");
-    }
-  };
+     Alert.alert("Profile Updated", "Your profile updated successfully");
+   } catch (error) {
+     console.log("Update profile error:", error);
+     Alert.alert("Error", "Profile update failed");
+   }
+ };
+
 
   return (
     <View style={styles.container}>
