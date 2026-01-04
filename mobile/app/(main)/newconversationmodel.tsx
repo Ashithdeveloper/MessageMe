@@ -1,6 +1,6 @@
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import BackButton from "@/components/BackButton";
@@ -10,7 +10,8 @@ import Input from "@/components/Input";
 import Typo from "@/components/Type";
 import { useAuth } from "@/context/authContext";
 import Button from "@/components/Button";
-import { getContacts } from "@/socket/socketEven";
+import { getContacts, newConversation } from "@/socket/socketEven";
+import { uploadToCloudinary } from "@/services/imageUploaded";
 
 const Newconversationmodel = () => {
   const { isGroup } = useLocalSearchParams();
@@ -29,11 +30,13 @@ const Newconversationmodel = () => {
   //contacts socket API 
   useEffect(()=>{
     getContacts(processContacts);
+    newConversation(processNewConversation);
     getContacts(
       {}
     )
     return () => {
       getContacts(processContacts , true);
+      newConversation(processNewConversation , true);
     }
   },[])
   const processContacts = (res: any) =>{
@@ -43,7 +46,28 @@ const Newconversationmodel = () => {
       console.log("Contacts:", res.data);
     }
   }
-   const pickImage = async () => {
+  const processNewConversation = (res: any) =>{
+    console.log("New Conversation:", res);
+    setIsLoading(false);
+    if(res.success){
+      router.back(); 
+      router.push({
+        pathname:"/conversation",
+        params:{
+          id : res.data._id ,
+          name : res.data.name,
+          avatar : res.data.avatar,
+          type : res.data.type,
+          participants : JSON.stringify(res.data.participants)
+        }
+      })
+    }else{
+      console.log("New Conversation:", res);
+      Alert.alert("Error", res.msg);
+    }
+ 
+  }
+   const PickImage = async () => {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   
       if (!permission.granted) {
@@ -84,51 +108,38 @@ const onSelectUser = (user: any) => {
     toggleParticipant(user);
   } else {
     // start single conversation
-    console.log("Start chat with", user.id);
+    newConversation({
+      type: "direct",
+      participants: [currentUser.id, user.id],
+    })
+
   }
 };
-const createGroup = () => {
+const createGroup = async () => {
   if(!groupName.trim() || !currentUser || selectedParticipants.length<2){
     return
   }
+  setIsLoading(true);
+  try {
+    let avatar = null;
+    if(pickedImage){
+      const res = await uploadToCloudinary(pickedImage);
+      if(res){
+        avatar = res;
+      }
+    }
+    newConversation({
+      type: "group",
+      participants :[currentUser.id , ...selectedParticipants],
+      name : groupName,
+      avatar,
+    })
+   
+  } catch (error) {
+    console.log(error);
+  }
 }
-  // create group
-
-
-  // const contacts = [
-  //   {
-  //     id: 1,
-  //     name: "Ashith ",
-  //     image: "https://via.placeholder.com/150",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Austine Doe",
-  //     image: "https://via.placeholder.com/150",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "user 3",
-  //     image: "https://via.placeholder.com/150",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "user 4",
-  //     image: "https://via.placeholder.com/150",
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Alice",
-  //     image: "https://via.placeholder.com/150",
-  //   },
-  //   {
-  //     id: 6,
-  //     name: "user 6",
-  //     image: "https://via.placeholder.com/150",
-  //   },
-  // ];
-
-
+  
   return (
     <ScreenWrapper isModal={true}>
       <View style={styles.container}>
@@ -143,7 +154,7 @@ const createGroup = () => {
         {isGroupMOde && (
           <View style={styles.groupInfoContainer}>
             <View style={styles.avatarContainer}>
-              <TouchableOpacity onPress={pickImage}>
+              <TouchableOpacity onPress={PickImage}>
                 <Avatar uri={profileImage} size={100} isGroup />
               </TouchableOpacity>
             </View>

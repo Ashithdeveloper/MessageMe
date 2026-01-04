@@ -33,10 +33,11 @@ export function registerChatEvents(io: SocketServer, socket: Socket) {
         createdBy: socket.data.userId,
       });
       // get all conversated users
-      const connectedSockets = Array.from(
-        io.sockets.sockets
-          .values()
-          .filter((s) => s.data.participants.includes(s.data.userId))
+      const connectedSockets = Array.from(io.sockets.sockets.values()).filter(
+        (s) => {
+          const userId = s.data?.userId;
+          return userId && data.participants.includes(userId);
+        }
       );
       //join this conversation by all online users
       connectedSockets.forEach((participantSocket) => {

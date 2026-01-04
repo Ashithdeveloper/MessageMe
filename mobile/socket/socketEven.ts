@@ -29,3 +29,17 @@ export const getContacts = (payload : any , off : boolean = false ) => {
         socket.emit("getContacts",payload);
     }
 }  
+export const newConversation = (payload : any , off : boolean = false ) => {
+    const socket = getSocket();
+    if(!socket) {
+        console.log("❌ Socket is not connected");
+        return 
+    }
+    if(off){
+        socket.off("newConversation",payload);
+    }else if(typeof payload === "function"){
+        socket.on("newConversation",payload);
+    }else{
+        socket.emit("newConversation",payload);
+    }
+}  
