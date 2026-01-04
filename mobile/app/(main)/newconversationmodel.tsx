@@ -13,6 +13,7 @@ import Button from "@/components/Button";
 import { getContacts, newConversation } from "@/socket/socketEven";
 import { uploadToCloudinary } from "@/services/imageUploaded";
 
+
 const Newconversationmodel = () => {
   const { isGroup } = useLocalSearchParams();
   const isGroupMOde = isGroup === "1"
