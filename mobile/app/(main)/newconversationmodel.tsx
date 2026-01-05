@@ -113,7 +113,7 @@ const onSelectUser = (user: any) => {
       type: "direct",
       participants: [currentUser.id, user.id],
     })
-
+    console.log("Selected user:", user.id , currentUser.id);
   }
 };
 const createGroup = async () => {

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Touchable } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Typo from "@/components/Type";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
@@ -10,84 +10,100 @@ import { useRouter } from "expo-router";
 import ConversationItem from "@/components/ConversationItem";
 import Loading from "@/components/Loading";
 import Button from "@/components/Button";
+import { getConversations } from "@/socket/socketEven";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { ConversationProps } from "@/types";
 
 const Home = () => {
   const { user: currentUser, signOut } = useAuth();
   const router = useRouter()
   const [ selectedTab , setSelectedTab ] = useState(0)
   const [ loading, setLoading ] = useState(false);
+  const [conversations, setConversations] = useState<ConversationProps[]>([]);
+
   console.log("Current user:", currentUser);
 
+  useEffect(() => {
+    getConversations(processConversation);
+    getConversations(null)
+    return () => {
+      getConversations(processConversation , true);
+    }
+  },[])
+  const processConversation = ( res : any  ) =>{
+    console.log("Conversations:", res);
+    setConversations(res.data);
+  }
   const handleLogout = async () => {
     await signOut();
   };
-  const conversations = [
-    {
-      id: "1",
-      name: "Alice Johnson",
-      type: "direct",
-      avatar: "https://i.pravatar.cc/150?img=1",
-      lastMessage: {
-        senderName: "Alice Johnson",
-        content: "Hey! Are we still on for tonight?",
-        createdAt: "2025-06-22T18:45:00Z",
-      },
-      unreadCount: 2,
-      isOnline: true,
-    },
-    {
-      id: "2",
-      name: "Project Team",
-      type: "group",
-      avatar: "https://cdn-icons-png.flaticon.com/512/921/921071.png",
-      lastMessage: {
-        senderName: "Sarah",
-        content: "Meeting rescheduled to 3pm tomorrow.",
-        createdAt: "2025-06-21T14:10:00Z",
-      },
-      unreadCount: 0,
-      isOnline: false,
-    },
-    {
-      id: "3",
-      name: "Bob Williams",
-      type: "direct",
-      avatar: "https://i.pravatar.cc/150?img=8",
-      lastMessage: {
-        senderName: "Bob Williams",
-        content: "Bro, did you push the code to GitHub?",
-        createdAt: "2025-06-22T10:30:00Z",
-      },
-      unreadCount: 5,
-      isOnline: false,
-    },
-    {
-      id: "4",
-      name: "College Friends",
-      type: "group",
-      avatar: "https://cdn-icons-png.flaticon.com/512/847/847969.png",
-      lastMessage: {
-        senderName: "Rahul",
-        content: "Let’s plan a trip this weekend 🔥",
-        createdAt: "2025-06-20T20:15:00Z",
-      },
-      unreadCount: 1,
-      isOnline: false,
-    },
-    {
-      id: "5",
-      name: "Mentor",
-      type: "direct",
-      avatar: "https://i.pravatar.cc/150?img=12",
-      lastMessage: {
-        senderName: "Mentor",
-        content: "Good progress. Focus on optimization next.",
-        createdAt: "2025-06-19T09:00:00Z",
-      },
-      unreadCount: 0,
-      isOnline: true,
-    },
-  ];
+  // const conversations = [
+  //   {
+  //     id: "1",
+  //     name: "Alice Johnson",
+  //     type: "direct",
+  //     avatar: "https://i.pravatar.cc/150?img=1",
+  //     lastMessage: {
+  //       senderName: "Alice Johnson",
+  //       content: "Hey! Are we still on for tonight?",
+  //       createdAt: "2025-06-22T18:45:00Z",
+  //     },
+  //     unreadCount: 2,
+  //     isOnline: true,
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Project Team",
+  //     type: "group",
+  //     avatar: "https://cdn-icons-png.flaticon.com/512/921/921071.png",
+  //     lastMessage: {
+  //       senderName: "Sarah",
+  //       content: "Meeting rescheduled to 3pm tomorrow.",
+  //       createdAt: "2025-06-21T14:10:00Z",
+  //     },
+  //     unreadCount: 0,
+  //     isOnline: false,
+  //   },
+  //   {
+  //     id: "3",
+  //     name: "Bob Williams",
+  //     type: "direct",
+  //     avatar: "https://i.pravatar.cc/150?img=8",
+  //     lastMessage: {
+  //       senderName: "Bob Williams",
+  //       content: "Bro, did you push the code to GitHub?",
+  //       createdAt: "2025-06-22T10:30:00Z",
+  //     },
+  //     unreadCount: 5,
+  //     isOnline: false,
+  //   },
+  //   {
+  //     id: "4",
+  //     name: "College Friends",
+  //     type: "group",
+  //     avatar: "https://cdn-icons-png.flaticon.com/512/847/847969.png",
+  //     lastMessage: {
+  //       senderName: "Rahul",
+  //       content: "Let’s plan a trip this weekend 🔥",
+  //       createdAt: "2025-06-20T20:15:00Z",
+  //     },
+  //     unreadCount: 1,
+  //     isOnline: false,
+  //   },
+  //   {
+  //     id: "5",
+  //     name: "Mentor",
+  //     type: "direct",
+  //     avatar: "https://i.pravatar.cc/150?img=12",
+  //     lastMessage: {
+  //       senderName: "Mentor",
+  //       content: "Good progress. Focus on optimization next.",
+  //       createdAt: "2025-06-19T09:00:00Z",
+  //     },
+  //     unreadCount: 0,
+  //     isOnline: true,
+  //   },
+  // ];
 const directConversations = conversations
   .filter((item: any) => item.type === "direct")
   .sort((a: any, b: any) => {
@@ -161,9 +177,9 @@ const directConversations = conversations
             {/* messages */}
             <View style={styles.conversationList}>
               {selectedTab === 0 &&
-                directConversations.map((item: any, index: number) => (
+                directConversations.map((item: ConversationProps, index: number) => (
                   <ConversationItem
-                    key={item.id}
+                    key={index}
                     item={item}
                     router={router}
                     showDivider={directConversations.length !== index + 1}
@@ -171,9 +187,9 @@ const directConversations = conversations
                 ))}
 
               {selectedTab === 1 &&
-                groupConversations.map((item: any, index: number) => (
+                groupConversations.map((item: ConversationProps, index: number) => (
                   <ConversationItem
-                    key={item.id}
+                    key={index}
                     item={item}
                     router={router}
                     showDivider={groupConversations.length !== index + 1}

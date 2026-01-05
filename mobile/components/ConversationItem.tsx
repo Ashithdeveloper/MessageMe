@@ -4,12 +4,19 @@ import { colors, spacingX, spacingY } from "@/constants/theme";
 import Avatar from "./Avatar";
 import Typo from "./Type";
 import moment from "moment";
-const ConversationItem = ({item , showDivider , router}:any) => {
+import { ConversationListItemProps } from "@/types";
+import { useAuth } from "@/context/authContext";
+const ConversationItem = ({item , showDivider , router}:ConversationListItemProps) => {
   const openConversation = () => {
     
   }
+  const { user : currentUser } = useAuth();
   const lastMessage: any = item.lastMessage;
   const isDirect = item.type === "direct";
+  const avatar = item.avatar;
+  const otherParticipants = isDirect? item.participants.find(p=> p._id != currentUser?.id):null
+
+  
   const getLastMessageContent = () => {
     if(!lastMessage) return null;
 
@@ -40,7 +47,7 @@ const ConversationItem = ({item , showDivider , router}:any) => {
       style={styles.conversationItem}
       onPress={openConversation}>
         <View>
-          <Avatar uri={null} size={47} isGroup={item.type === "group" } />
+          <Avatar uri={avatar} size={47} isGroup={item.type === "group" } />
         </View>
         <View style={{ flex: 1 }} >
           <View style={styles.row}>
