@@ -1,9 +1,11 @@
 import { StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { MessageProps } from "@/types";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import { useAuth } from "@/context/authContext";
+import Avatar from "./Avatar";
+import Typo from "./Type";
 
 const MessageItem = ({
   item,
@@ -14,9 +16,31 @@ const MessageItem = ({
 }) => {
     const { user: currentUser } = useAuth();
     const isMe = item.isMe
+  
   return (
-    <View>
-      <Text>MessageItem</Text>
+    <View
+      style={[
+        styles.messageContainer,
+        isMe ? styles.myMessage : styles.theirMessage,
+      ]}
+    >
+      {!isMe && !isDirect && (
+        <Avatar size={30} uri={null} style={styles.messageAvatar} />
+      )}
+      <View
+        style={[
+          styles.messageBubble,
+          isMe ? styles.myBubble : styles.theirBubble,
+        ]}
+      >
+        {!isMe && !isDirect &&(
+          <Typo color={colors.neutral900} fontWeight={"600"}>
+            {item.sender.name}
+          </Typo>
+        )}
+        { item.content && <Typo size={15}>{item.content}</Typo>}
+        <Typo size={12} style={{ alignSelf:"flex-end"}} fontWeight={"500"} color={colors.neutral600 }>{item.createdAt}</Typo>
+      </View>
     </View>
   );
 };
