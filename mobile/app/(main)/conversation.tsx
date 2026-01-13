@@ -1,12 +1,18 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import { useLocalSearchParams } from 'expo-router'
 
-const conversation = () => {
+const Conversation = () => {
+  
+  const data = useLocalSearchParams();
+
+  console.log(data);
+  
   return (
     <View>
-      <Text>conversation</Text>
+      <Text>Conversation</Text>
     </View>
   )
 }
 
-export default conversation
+export default Conversation

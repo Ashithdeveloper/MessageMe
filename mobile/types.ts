@@ -24,6 +24,7 @@ export interface UserProps {
   name: string;
   avatar?: string | null;
   id?: string;
+  
   // Add any additional fields from the token payload as needed
 }
 export interface UserDataProps {
@@ -111,12 +112,14 @@ export type ConversationListItemProps = {
 
 export type ConversationProps = {
   _id: string;
+  profilepic: string;
   type: "direct" | "group";
   avatar: string | null;
   participants: {
     _id: string;
     name: string;
     avatar: string;
+    profilepic: string;
     email: string;
   }[];
   name?: string;

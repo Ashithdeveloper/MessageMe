@@ -7,15 +7,17 @@ import moment from "moment";
 import { ConversationListItemProps } from "@/types";
 import { useAuth } from "@/context/authContext";
 const ConversationItem = ({item , showDivider , router}:ConversationListItemProps) => {
-  const openConversation = () => {
-    
-  }
+  
   const { user : currentUser } = useAuth();
   const lastMessage: any = item.lastMessage;
   const isDirect = item.type === "direct";
-  const avatar = item.avatar;
-  const otherParticipants = isDirect? item.participants.find(p=> p._id != currentUser?.id):null
+  let avatar = item.avatar;
+  console.log("item:", item);
 
+  const otherParticipants = isDirect? item.participants.find(p=> p._id != currentUser?.id):null
+  if(isDirect && otherParticipants){
+    avatar = otherParticipants?.profilepic;
+  }
   
   const getLastMessageContent = () => {
     if(!lastMessage) return null;
@@ -41,6 +43,20 @@ const ConversationItem = ({item , showDivider , router}:ConversationListItemProp
     return messageDate.format("MMM DD, YYYY");
    
   }
+
+  const openConversation = () => {
+    router.push({
+      pathname:"/(main)/conversation",
+      params:{
+        id : item._id ,
+        name : item.name,
+        avatar : item.avatar || item.profilepic ,
+        type : item.type,
+        participants : JSON.stringify(item.participants)
+      }
+    })
+  };
+
   return (
     <View>
       <TouchableOpacity
@@ -52,7 +68,7 @@ const ConversationItem = ({item , showDivider , router}:ConversationListItemProp
         <View style={{ flex: 1 }} >
           <View style={styles.row}>
             <Typo size={17} fontWeight={"600"}>
-              {item.name}
+              { isDirect? otherParticipants?.name : item.name}
             </Typo>
             {
               item.lastMessage && <Typo size={15}>{getLastMessage()}</Typo>

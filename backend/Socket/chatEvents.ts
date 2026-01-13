@@ -25,12 +25,12 @@ export function registerChatEvents(io: SocketServer, socket: Socket) {
           select: "name email profilepic",
         })
         .lean();
-
+      
       // 🔥 join all conversation rooms
       conversations.forEach((conversation) => {
         socket.join(conversation._id.toString());
       });
-
+      console.log("getConversations", conversations);
       socket.emit("getConversations", {
         success: true,
         data: conversations,
@@ -109,7 +109,7 @@ export function registerChatEvents(io: SocketServer, socket: Socket) {
           select: "name email profilepic",
         })
         .lean();
-
+      console.log("newConversation", populatedConversation);
       io.to(conversation._id.toString()).emit("newConversation", {
         success: true,
         data: { ...populatedConversation, isNew: true },
