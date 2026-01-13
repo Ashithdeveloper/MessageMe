@@ -23,6 +23,14 @@ export default function MainLayout() {
         }}
         
       />
+      <Stack.Screen
+        name="conversation"
+        options={{
+          animation: "fade", // Fade is actually good here for a popup feel
+          headerShown: false
+        }}
+        
+      />
     </Stack>
   );
 }
