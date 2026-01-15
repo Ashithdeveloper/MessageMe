@@ -141,6 +141,7 @@ export type MessageProps = {
     id: string;
     name: string;
     avatar: string | null;
+    profilepic: string | null;
   };
   content: string;
   attachement?: string | null;

@@ -10,6 +10,8 @@ const ConversationItem = ({item , showDivider , router}:ConversationListItemProp
   
   const { user : currentUser } = useAuth();
   const lastMessage: any = item.lastMessage;
+  console.log("item:", item);
+  console.log("lastMessage:", lastMessage);
   const isDirect = item.type === "direct";
   let avatar = item.avatar;
   console.log("item:", item);

@@ -57,3 +57,32 @@ export const getConversations = (payload : any , off : boolean = false ) => {
         socket.emit("getConversations",payload);
     }
 }  
+
+export const newMessage = (payload : any , off : boolean = false ) => {
+    const socket = getSocket();
+    if(!socket) {
+        console.log("❌ Socket is not connected");
+        return 
+    }
+    if(off){
+        socket.off("newMessage",payload);
+    }else if(typeof payload === "function"){
+        socket.on("newMessage",payload);
+    }else{
+        socket.emit("newMessage",payload);
+    }
+}  
+export const getMessage = (payload : any , off : boolean = false ) => {
+    const socket = getSocket();
+    if(!socket) {
+        console.log("❌ Socket is not connected");
+        return 
+    }
+    if(off){
+        socket.off("getMessage",payload);
+    }else if(typeof payload === "function"){
+        socket.on("getMessage",payload);
+    }else{
+        socket.emit("getMessage",payload);
+    }
+}  

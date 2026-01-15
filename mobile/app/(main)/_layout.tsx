@@ -8,8 +8,8 @@ export default function MainLayout() {
 
       <Stack.Screen
         name="profilemodal"
-        options={{
-          animation: "fade", // Fade is actually good here for a popup feel
+        options={{ 
+          animation: "fade",
     
         }}
         
@@ -18,7 +18,7 @@ export default function MainLayout() {
       <Stack.Screen
         name="newconversationmodel"
         options={{
-          animation: "fade", // Fade is actually good here for a popup feel
+          animation: "fade", 
           headerShown: false
         }}
         
@@ -26,7 +26,7 @@ export default function MainLayout() {
       <Stack.Screen
         name="conversation"
         options={{
-          animation: "fade", // Fade is actually good here for a popup feel
+          animation: "fade", 
           headerShown: false
         }}
         

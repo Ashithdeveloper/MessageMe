@@ -1,12 +1,12 @@
 import { Server as SocketServer, Socket } from "socket.io";
 import Conversation from "../src/model/conversation.js";
+import Message from "../src/model/Messafe.js";
 
 export function registerChatEvents(io: SocketServer, socket: Socket) {
   /* ---------------- GET CONVERSATIONS ---------------- */
   socket.on("getConversations", async () => {
     try {
       const userId = socket.data.userId;
-      
 
       if (!userId) {
         socket.emit("getConversations", {
@@ -21,11 +21,15 @@ export function registerChatEvents(io: SocketServer, socket: Socket) {
       })
         .sort({ updatedAt: -1 })
         .populate({
+          path: "lastMessage",
+          select: "content attachement senderId createdAt",
+        })
+        .populate({
           path: "participants",
           select: "name email profilepic",
         })
         .lean();
-      
+
       // 🔥 join all conversation rooms
       conversations.forEach((conversation) => {
         socket.join(conversation._id.toString());
@@ -82,7 +86,7 @@ export function registerChatEvents(io: SocketServer, socket: Socket) {
           return;
         }
       }
-      console.log("Participants:", data );
+      console.log("Participants:", data);
       /* ---- CREATE CONVERSATION ---- */
       const conversation = await Conversation.create({
         type: data.type,
@@ -122,4 +126,76 @@ export function registerChatEvents(io: SocketServer, socket: Socket) {
       });
     }
   });
+  socket.on("newMessage", async (data) => {
+    console.log("newMessage", data);
+    try {
+      const message = await Message.create({
+        conversationId: data.conversationId,
+        senderId: data.sender.id,
+        content: data.content,
+        attachement: data.attachement,
+      });
+      io.to(data.conversationId).emit("newMessage", {
+        success: true,
+        data: {
+          id: message._id,
+          content: data.content,
+          sender: {
+            id: data.sender.id,
+            name: data.sender.name,
+            avatar: data.sender.avatar,
+          },
+          attachement: data.attachement,
+          createdAt: new Date().toISOString(),
+          ConversationId: data.conversationId,
+        },
+      });
+      //update conversation lastmessage
+      await Conversation.findByIdAndUpdate(data.conversationId, {
+        lastMessage: message._id,
+      });
+    } catch (error) {
+      console.log("newMessage error", error);
+      socket.emit("newMessage", {
+        success: false,
+        msg: "Error sending message",
+      });
+    }
+  });
+
+  socket.on("getMessage" , async (data: {conversationId: string}) =>{
+    console.log("getMessage", data);
+    try {
+      const messages = await Message.find({ 
+        conversationId: data.conversationId 
+      })
+      .sort({ createdAt: -1 })
+      .populate<{senderId: {_id: string ,name: string, profilepic: string}}>({
+        path: "senderId",
+        select: "name profilepic",
+      }).lean();
+
+      const messagewithSender = messages.map((message) => ({
+        ...message,
+        id : message._id,
+        sender : {
+          id : message.senderId._id,
+          name : message.senderId.name,
+          profilepic : message.senderId.profilepic
+        }
+      }))
+
+      socket.emit("getMessage", {
+        success: true,
+        data: messagewithSender,
+      });
+
+    } catch (error) {
+      console.log("getMessage error", error);
+      socket.emit("getMessage", {
+        success: false,
+        msg: "Error getting message",
+      });
+    }
+  })
 }

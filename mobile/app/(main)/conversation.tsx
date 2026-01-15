@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
@@ -23,10 +23,15 @@ import BackButton from "@/components/BackButton";
 import Avatar from "@/components/Avatar";
 import MessageItem from "@/components/MessageItem";
 import Input from "@/components/Input";
+import { uploadToCloudinary } from "@/services/imageUploaded";
+import { MessageProps, ResponseProps } from "@/types";
+import { getMessage, newMessage } from "@/socket/socketEven";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const Conversation = () => {
   const { user: currentUser } = useAuth();
   const {
+    id: conversationId,
     name,
     participants: stringifiedParticipants,
     avatar,
@@ -34,6 +39,8 @@ const Conversation = () => {
   } = useLocalSearchParams();
 
   const [message, setMessage] = useState("");
+  const [ messages, setMessages] = useState<MessageProps[]>([]);
+  const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ uri: string } | null>(
     null
   );
@@ -51,41 +58,37 @@ const Conversation = () => {
   const conversationAvatar = isDirect ? otherParticipant?.profilepic : avatar;
   const conversationName = isDirect ? otherParticipant?.name : name;
 
-  const dummyMessages = [
-    {
-      id: "msg_1",
-      sender: {
-        id: "user_2",
-        name: "Jane Smith",
-        avatar: null,
-      },
-      content: "Hey! Did you check the new update?",
-      createdAt: "10:35 AM",
-      isMe: false,
-    },
-    {
-      id: "msg_2",
-      sender: {
-        id: "me",
-        name: "Me",
-        avatar: null,
-      },
-      content: "Yes, UI looks much cleaner 👍",
-      createdAt: "10:37 AM",
-      isMe: true,
-    },
-    {
-      id: "msg_3",
-      sender: {
-        id: "user_2",
-        name: "Jane Smith",
-        avatar: null,
-      },
-      content: "Performance feels better too!",
-      createdAt: "10:38 AM",
-      isMe: false,
-    },
-  ];
+
+  useEffect(()=>{
+    newMessage(newMessageHandler);
+    getMessage(messageHandler);
+    getMessage({conversationId});
+    return ()=>{
+      newMessage(newMessageHandler , true);
+      getMessage(messageHandler , true);
+    }
+  },[])
+
+  const messageHandler = (res : ResponseProps) => {
+    if(res.success){
+      setMessages(res.data);
+    }
+  };
+
+  const newMessageHandler = (res : ResponseProps) => {
+  
+    console.log("newMessageHandler" , res);
+    if (res.success) {
+      if (res.data.ConversationId == conversationId) {
+        setMessages((prevMessages) => [
+          res.data as MessageProps,
+          ...prevMessages,
+        ]);
+      }
+    }
+  };
+
+
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -106,63 +109,80 @@ const Conversation = () => {
     }
   };
 
+  const sendMesssage = async () =>{
+    setLoading(true);
+    try {
+      let attachement = null ;
+      if(selectedFile){
+        const uploadImage = await uploadToCloudinary(selectedFile);
+        if (uploadImage){
+          attachement = uploadImage
+        }
+      }
+      // send message
+      newMessage({
+        conversationId ,
+        sender:{
+          id : currentUser?.id,
+          name : currentUser?.name,
+          avatar : currentUser?.avatar
+        },
+        content : message.trim(),
+        attachement
+      })
+     
+      setMessage('');
+      setSelectedFile(null);
+    } catch (error) {
+      console.log("sendmesssage error",error);
+    }
+  }
+
   return (
     <ScreenWrapper showPattern bgOpacity={0.5}>
-      <View style={styles.container}>
-        {/* HEADER */}
-        <Header
-          title=""
-          headerTransparent
-          headerStatusBarHeight={0}
-          headerStyle={{
-            backgroundColor: "transparent",
-            elevation: 0,
-            shadowOpacity: 0,
-            height: 49,
-          }}
-          headerLeft={() => (
-            <View style={styles.headerLeft}>
-              <BackButton color={colors.white} />
-              <Avatar
-                uri={conversationAvatar as string}
-                isGroup={type === "group"}
-              />
-              <Typo fontWeight="600" color={colors.white}>
-                {conversationName}
-              </Typo>
-            </View>
-          )}
-        />
-
-        {/* CONTENT */}
-        <View style={styles.content}>
-          <FlatList
-            data={dummyMessages}
-            inverted
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            keyboardDismissMode="on-drag"
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.messagesContent}
-            renderItem={({ item }) => (
-              <MessageItem item={item} isDirect={isDirect} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      >
+        <View style={styles.container}>
+          {/* HEADER */}
+          <Header
+            title=""
+            headerTransparent
+            headerStatusBarHeight={0}
+            headerStyle={{ height: 49 }}
+            headerLeft={() => (
+              <View style={styles.headerLeft}>
+                <BackButton color={colors.white} />
+                <Avatar
+                  uri={conversationAvatar as string}
+                  isGroup={type === "group"}
+                />
+                <Typo fontWeight="600" color={colors.white}>
+                  {conversationName}
+                </Typo>
+              </View>
             )}
           />
 
-          {/* IMAGE PREVIEW */}
-          {selectedFile?.uri && (
-            <Image
-              source={{ uri: selectedFile.uri }}
-              style={styles.selectedFile}
-              contentFit="cover"
+          {/* CONTENT */}
+          <View style={styles.content}>
+            {/* MESSAGES */}
+            <FlatList
+              data={messages}
+              inverted
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.messagesContent}
+              renderItem={({ item }) => (
+                <MessageItem item={item} isDirect={isDirect} />
+              )}
             />
-          )}
 
-          {/* INPUT */}
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={49}
-          >
+            {/* INPUT */}
             <View style={styles.footer}>
               <Input
                 value={message}
@@ -183,23 +203,33 @@ const Conversation = () => {
                       weight="bold"
                       size={verticalScale(20)}
                     />
+                    {selectedFile?.uri && (
+                      <Image
+                        source={{ uri: selectedFile.uri }}
+                        style={styles.selectedFile}
+                        contentFit="cover"
+                      />
+                    )}
                   </TouchableOpacity>
                 }
               />
+
               <View style={styles.inputRightIcon}>
-                <TouchableOpacity style={styles.inputIcon} onPress={() => {}} >
+                <TouchableOpacity
+                  style={styles.inputIcon}
+                  onPress={sendMesssage}
+                >
                   <PaperPlaneTiltIcon
                     color={colors.black}
                     weight="fill"
                     size={verticalScale(22)}
                   />
-
                 </TouchableOpacity>
               </View>
             </View>
-          </KeyboardAvoidingView>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 };

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Touchable } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity,  ScrollView } from "react-native";
 import React, { useEffect, useState } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Typo from "@/components/Type";
@@ -11,7 +11,7 @@ import ConversationItem from "@/components/ConversationItem";
 import Loading from "@/components/Loading";
 import Button from "@/components/Button";
 import { getConversations, newConversation } from "@/socket/socketEven";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+
 import { ConversationProps, ResponseProps } from "@/types";
 
 const Home = () => {
