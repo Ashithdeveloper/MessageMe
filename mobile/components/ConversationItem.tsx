@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { colors, spacingX, spacingY } from "@/constants/theme";
 import Avatar from "./Avatar";
 import Typo from "./Type";
@@ -9,6 +9,7 @@ import { useAuth } from "@/context/authContext";
 const ConversationItem = ({item , showDivider , router}:ConversationListItemProps) => {
   
   const { user : currentUser } = useAuth();
+  const [ loading, setLoading ] = useState(false);
   const lastMessage: any = item.lastMessage;
   console.log("item:", item);
   console.log("lastMessage:", lastMessage);

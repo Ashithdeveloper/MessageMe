@@ -10,7 +10,7 @@ import { useRouter } from "expo-router";
 import ConversationItem from "@/components/ConversationItem";
 import Loading from "@/components/Loading";
 import Button from "@/components/Button";
-import { getConversations, newConversation } from "@/socket/socketEven";
+import { getConversations, newConversation, newMessage } from "@/socket/socketEven";
 
 import { ConversationProps, ResponseProps } from "@/types";
 
@@ -26,10 +26,12 @@ const Home = () => {
   useEffect(() => {
     getConversations(processConversation);
     newConversation(newConversationHandle)
+    newMessage(newMessageHandler)
     getConversations(null)
     return () => {
       getConversations(processConversation , true);
       newConversation(newConversationHandle , true);
+      newMessage(newMessageHandler , true);
     }
   }, []);
   const processConversation = ( res : any  ) =>{
@@ -39,6 +41,22 @@ const Home = () => {
   const newConversationHandle = (res: ResponseProps)=>{
     if(res.success && res.data?.isNew){
       setConversations((prevConversations) => [...prevConversations, res.data]);  
+    }
+  }
+
+  const newMessageHandler = (res : ResponseProps) => {
+    if(res.success){
+      let conversationId = res.data.conversationId;
+      setConversations((prevConversations) => {
+        let updatedConversations = prevConversations.map((item)=>{
+          if(item._id == conversationId){
+            item.lastMessage = res.data;
+          }
+          return item;
+        
+        })
+        return updatedConversations
+      })
     }
   }
   const handleLogout = async () => {

@@ -7,6 +7,7 @@ import { useAuth } from "@/context/authContext";
 import Avatar from "./Avatar";
 import Typo from "./Type";
 import moment from "moment";
+import { Image } from "expo-image";
 
 const MessageItem = ({
   item,
@@ -15,11 +16,11 @@ const MessageItem = ({
   item: MessageProps;
   isDirect: boolean;
 }) => {
-    const { user: currentUser } = useAuth();
-    const isMe = currentUser?.id === item.sender.id;
-    const formattedDate = moment(item.createdAt).isSame(moment(), "day") ? 
-    moment(item.createdAt).format("h:mm A") : 
-    moment(item.createdAt).format("MMM DD, h:mm A"); 
+  const { user: currentUser } = useAuth();
+  const isMe = currentUser?.id === item.sender.id;
+  const formattedDate = moment(item.createdAt).isSame(moment(), "day")
+    ? moment(item.createdAt).format("h:mm A")
+    : moment(item.createdAt).format("MMM DD, h:mm A");
   console.log("sender", item.sender);
   return (
     <View
@@ -29,21 +30,41 @@ const MessageItem = ({
       ]}
     >
       {!isMe && !isDirect && (
-        <Avatar size={30} uri={item.sender.profilepic} style={styles.messageAvatar} />
+        <Avatar
+          size={30}
+          uri={item.sender.profilepic}
+          style={styles.messageAvatar}
+        />
       )}
+
       <View
         style={[
           styles.messageBubble,
           isMe ? styles.myBubble : styles.theirBubble,
         ]}
       >
-        {!isMe && !isDirect &&(
+        {!isMe && !isDirect && (
           <Typo color={colors.neutral900} fontWeight={"600"}>
             {item.sender.name}
           </Typo>
         )}
-        { item.content && <Typo size={15}>{item.content}</Typo>}
-        <Typo size={12} style={{ alignSelf:"flex-end"}} fontWeight={"500"} color={colors.neutral600 }>{formattedDate}</Typo>
+        {item.attachement && (
+          <Image
+            source={item.attachement}
+            contentFit="cover"
+            style={styles.attachment}
+            transition={100}
+          />
+        )}
+        {item.content && <Typo size={15}>{item.content}</Typo>}
+        <Typo
+          size={12}
+          style={{ alignSelf: "flex-end" }}
+          fontWeight={"500"}
+          color={colors.neutral600}
+        >
+          {formattedDate}
+        </Typo>
       </View>
     </View>
   );
