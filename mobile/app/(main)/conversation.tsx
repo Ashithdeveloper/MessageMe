@@ -142,7 +142,7 @@ const Conversation = () => {
     <ScreenWrapper showPattern bgOpacity={0.5}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : "padding"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
         <View style={styles.container}>
@@ -167,20 +167,22 @@ const Conversation = () => {
           />
 
           {/* CONTENT */}
-          <View style={styles.content}>
+          <View style={[styles.content, { flex: 1 }]}>
             {/* MESSAGES */}
-            <FlatList
-              data={messages}
-              inverted
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-              keyboardDismissMode="on-drag"
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={styles.messagesContent}
-              renderItem={({ item }) => (
-                <MessageItem item={item} isDirect={isDirect} />
-              )}
-            />
+            <View style={{ flex: 1 }}>
+              <FlatList
+                data={messages}
+                inverted
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                keyboardDismissMode="on-drag"
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={styles.messagesContent}
+                renderItem={({ item }) => (
+                  <MessageItem item={item} isDirect={isDirect} />
+                )}
+              />
+            </View>
 
             {/* INPUT */}
             <View style={styles.footer}>
@@ -275,7 +277,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingTop: spacingY._7,
-    paddingBottom: verticalScale(22),
+    paddingBottom: verticalScale(10),
+    backgroundColor: colors.white,
   },
   messagesContainer: { flex: 1 },
   messagesContent: {
