@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 export const BASE_URL = !__DEV__
   ? "https://your-production-url.com"
   : Platform.OS === "android"
-    ? "http://192.168.1.4:3000"
+    ? "http://192.168.1.5:3000"
     : "http://localhost:3000";
 
 export const CLOUDINARY_CLOUD_NAME = "de3svehop";

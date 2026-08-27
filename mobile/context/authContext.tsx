@@ -61,21 +61,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       const decoded: any = jwtDecode<DecodedTokenProps>(storedToken);
 
-      // ✅ TOKEN EXPIRED
+      //  TOKEN EXPIRED
       if (decoded.exp * 1000 < Date.now()) {
         await AsyncStorage.removeItem("token");
         router.replace("/(auth)/welcome");
         return;
       }
 
-      // ✅ TOKEN VALID
+      //  TOKEN VALID
       setToken(storedToken);
       setUser(decoded);
       console.log("Decoded token:", decoded);
       
   
 
-      // ⛔ DO NOT await socket here
+      // DO NOT await socket here
       connectSocket();
 
       router.replace("/(main)/home");

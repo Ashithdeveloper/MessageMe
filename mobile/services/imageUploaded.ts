@@ -12,7 +12,7 @@ export const uploadToCloudinary = async (file: any): Promise<string> => {
 
   formData.append("upload_preset", "test_rn_upload_123");
 
-  // 🔥 FIX: use CLOUD_API directly
+  //  use CLOUD_API directly
   const res = await fetch(CLOUD_API, {
     method: "POST",
     body: formData,
